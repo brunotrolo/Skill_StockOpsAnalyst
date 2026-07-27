@@ -38,3 +38,14 @@ muda lá, não aqui.
    sempre o preço de **fechamento (CLOSE)**. Bid/ask intradiário serve apenas
    para avaliar se há liquidez suficiente para executar a ordem, nunca como
    base de cálculo.
+
+8. **Sanitizar toda saída antes de exibir ou persistir.** Nenhuma skill pode
+   incluir token, credencial, chave de API, cabeçalho de autenticação ou
+   qualquer segredo de conexão MCP (Sheets, OpLab, Banco AI, etc.) em sua
+   saída — nem no relatório final, nem em mensagens de erro/debug, nem em
+   qualquer log ou registro persistido (planilha, arquivo, memória entre
+   sessões). Se uma chamada de API falhar e o erro expuser um segredo,
+   reportar apenas que a chamada falhou e qual dado ficou pendente, nunca o
+   conteúdo bruto do erro. Vale também para qualquer subagente ou skill
+   futura que grave dados de volta em uma fonte externa (ex.: Sheets): só o
+   dado derivado necessário é escrito, nunca a credencial usada para obtê-lo.

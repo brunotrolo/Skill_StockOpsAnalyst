@@ -316,3 +316,80 @@ Registro de progresso, atualizado conforme cada peça é construída e validada.
 - [ ] **Bloco 5 — `analise-cenarios`**: não iniciado.
 - [ ] **Fase 2 — Subagentes**: aguardando as 5 skills estáveis por 1-2 semanas
   em uso real, conforme o próprio roadmap determina.
+
+---
+
+## Requisitos adicionais (acréscimo — 27/07/2026)
+
+Dois requisitos levantados por Bruno em conversa posterior ao Bloco 0. Como
+nas seções anteriores, isto é um acréscimo — nada do conteúdo acima foi
+removido ou reescrito.
+
+### Requisito 1 — Funcionar em web e mobile no claude.ai, não só no Claude Code
+
+O roadmap original já previa empacotamento web + mobile (seção "Empacotamento
+web + mobile" acima), mas isso vira requisito formal de aceite de cada skill,
+não só um passo final opcional:
+
+- Nenhuma skill é considerada "pronta" só por rodar no Claude Code. Antes do
+  handoff, rodar `build_skill_bundle.sh <nome>` para gerar o zip autocontido
+  e testá-lo de fato carregado em claude.ai — **tanto na versão web quanto na
+  versão mobile** (não apenas uma das duas).
+- Qualquer recurso que só existe no Claude Code (subagentes com contexto
+  isolado, hooks, MCP servers do ambiente local) não pode ser pré-requisito
+  para a skill funcionar no básico — tem que ficar isolado como capacidade
+  "a mais" quando disponível, nunca uma dependência dura. Por isso a Fase 2
+  (Subagentes) já era, desde o início do roadmap, marcada como exclusiva do
+  Claude Code — isso continua valendo e fica reforçado aqui.
+- `portfolio_params.yaml` e `golden_rules.md` sincronizados pelo
+  `build_skill_bundle.sh` para dentro de cada skill (não `_shared/` externo)
+  é o que garante que o zip funcione de forma autocontida em claude.ai — sem
+  isso a skill quebra no upload por não enxergar arquivos fora da própria
+  pasta.
+
+### Requisito 2 — Avaliação de aderência: artigo "Novidades no meu AI Memory" (Akita on Rails)
+
+Artigo avaliado: https://akitaonrails.com/2026/07/20/novidades-no-meu-ai-memory-cada-vez-melhor-pra-usar-com-suas-ias/
+
+**O que o artigo descreve:** o `ai-memory`, ferramenta do Fabio Akita que
+funciona como uma camada de persistência de sessão **agnóstica de provider**
+para agentes de código (Claude Code, Codex, OpenCode, Pi, Crush, OMP). A
+novidade central da versão avaliada é o `ai-memory run`: "workstreams" que
+atravessam harnesses diferentes — cada agente mantém sua sessão nativa
+própria, e uma camada portátil (ledger JSONL pesquisável) conecta essas
+sessões para não perder contexto ao trocar de provider.
+
+O ponto que motivou a avaliação — **sanitização**: antes de qualquer dado
+entrar nesse ledger portátil, um "sanitizer" filtra o que entra e o que fica
+de fora:
+- **Entra:** mensagens visíveis, tool calls com resultado, checkpoints Git
+  não-mutantes, metadata de origem (qual agente gerou o quê).
+- **Fica de fora:** credenciais de provedores, registros criptografados,
+  system prompts / "hidden reasoning", formatos privados não reconhecidos.
+- Há ainda um mecanismo `ignore_paths` para excluir diretórios inteiros
+  (ex.: `private/**`) da captura antes mesmo de qualquer spool ou fila.
+
+**Avaliação de aderência ao que estamos construindo:**
+
+- **Sem aderência direta como ferramenta a adotar.** O `ai-memory` resolve
+  portabilidade de sessão **entre harnesses de codificação diferentes**
+  (Claude Code ↔ Codex ↔ OpenCode). Nosso sistema não tem esse problema: é
+  Claude Code + claude.ai (Requisito 1 acima), sem necessidade de portar
+  raciocínio de sessão entre IAs de fornecedores diferentes. `ai-memory run`,
+  workstreams e a integração com `ai-jail` (sandboxing) não têm aplicação
+  aqui.
+- **O princípio de sanitização TEM aderência e já foi incorporado.** A ideia
+  central — nunca deixar segredo/credencial entrar em qualquer coisa
+  persistida ou exibida, só o dado visível e necessário — é diretamente
+  relevante porque nossas skills conectam com MCPs sensíveis (Sheets,
+  OpLab, Banco AI) e o roadmap já prevê um subagente que grava de volta em
+  fonte externa (`reconciliador-dados.md`, Fase 2). Ação tomada: virou a
+  **Regra de Ouro nº 8** em `golden_rules.md` — nenhuma skill pode expor
+  token, credencial ou segredo de conexão MCP em saída, erro, log ou
+  qualquer futuro registro persistido; ao gravar de volta em fonte externa,
+  só o dado derivado necessário é escrito, nunca a credencial usada para
+  obtê-lo.
+- **`ignore_paths`** (excluir diretórios sensíveis da captura) não se aplica
+  hoje porque nenhuma skill atual faz captura de arquivos/diretórios locais;
+  fica registrado aqui como padrão de referência caso alguma skill futura
+  passe a fazer logging automático de sessão.
