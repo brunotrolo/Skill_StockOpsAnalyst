@@ -1,0 +1,54 @@
+# ÚNICA fonte de verdade — nunca duplicar estes números em prosa dentro de um SKILL.md individual.
+# Qualquer skill que precise de um parâmetro numérico DEVE ler este arquivo (ou sua cópia
+# sincronizada, gerada por build_skill_bundle.sh, dentro da própria pasta da skill).
+# Alterações de parâmetros são feitas SOMENTE aqui.
+
+# --- Capital e metas ---
+capital_base_brl: 120000
+meta_mensal_min_brl: 5000
+
+# --- Gestão de risco de carteira ---
+colchao_minimo_pct: 15          # margem de segurança mínima sobre o patrimônio
+concentracao_maxima_pct: 20     # exposição máxima por ativo, % do patrimônio total
+
+# --- Delta (venda de opções / spreads) ---
+delta_entrada_min: -0.15        # faixa de entrada ideal (menor |delta|)
+delta_entrada_max: -0.30        # faixa de entrada ideal (maior |delta|)
+delta_alerta_protocolo3: -0.50  # aciona Protocolo 3 (revisão/possível ajuste)
+delta_exit_sem_discussao: -0.70 # saída obrigatória, sem debate
+
+# --- Tempo até o vencimento ---
+dte_critico_dias: 10            # dias até o vencimento considerados críticos
+
+# --- Eficiência da estrutura (spreads) ---
+eficiencia_minima_pct: 25       # crédito líquido ÷ largura do spread, mínimo aceitável
+
+# --- Volatilidade implícita ---
+iv_rank_minimo_pct: 50          # IV Rank mínimo para considerar venda de volatilidade
+
+# --- Universo de ativos elegíveis ---
+whitelist_best:
+  - B3SA3
+  - BBAS3
+  - BBDC4
+  - BRAV3
+  - BRKM5
+  - CMIG4
+  - CMIN3
+  - COGN3
+  - CSAN3
+  - CSNA3
+  - DIRR3
+  - EMBJ3
+  - FLRY3
+  - GGBR4
+  - ITSA4
+  - ITUB4
+  - NATU3
+  - PETR4
+  - PRIO3
+  - PSSA3
+  - SANB11
+  - SUZB3
+  - USIM5
+  - VALE3
